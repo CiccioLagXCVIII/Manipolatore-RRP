@@ -34,7 +34,8 @@
     <!-- AA ========== Gestione Script ========== -->
 
     <!-- BB Script Per Il Movimento Del Manipolatore RRP Eseguito Solo Se La GUI È Disabilitata -->
-    <node name="jointController" pkg="manipolatoreRRP" type="jointController.py" output="screen" unless="$(arg gui)" />
+    <!-- CC Required Serve Per Fare In Modo Che Se Termina Lo Script Termina Anche roslaunch -->
+    <node name="jointController" pkg="manipolatoreRRP" type="jointController.py" output="screen" unless="$(arg gui)" required="true"/>
 
     <!-- BB  Script Che Stampa Le Matrici Di Trasformazione Omogenea -->
     <node name="tfPrinter" pkg="manipolatoreRRP" type="tfPrinter.py" output="screen" if="$(arg gui)"/>

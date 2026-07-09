@@ -1,65 +1,80 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>manipolatoreRRP</name>
-  <version>0.0.0</version>
+  <version>0.0.3</version>
   <description>Package Di manipolatoreRRP</description>
 
-  <!-- One maintainer tag required, multiple allowed, one person per tag -->
-  <!-- Example:  -->
-  <!-- <maintainer email="jane.doe@example.com">Jane Doe</maintainer> -->
+  <!-- AA ======================= DEFINIZIONE INFORMAZIONI DI BASE ======================= -->
+
+  <!-- BB Un Tag Di Manutentore Richiesto, Più Tag Consentiti, Una Sola Persona Per Ciascun Tag -->
+  <!-- CC Esempio: -->
+  <!-- <maintainer email="utente.esempio@esempio.com">Utente Esempio</maintainer> -->
   <maintainer email="root@todo.todo">root</maintainer>
 
-
-  <!-- One license tag required, multiple allowed, one license per tag -->
-  <!-- Commonly used license strings: -->
-  <!--   BSD, MIT, Boost Software License, GPLv2, GPLv3, LGPLv2.1, LGPLv3 -->
+  <!-- BB Un Tag Di Licenza Richiesto, Più Tag Consentiti, Una Sola Licenza Per Ciascun Tag -->
+  <!-- CC Stringhe Di Licenza Comunemente Utilizzate: -->
+  <!-- BSD, MIT, Licenza Software Boost, GPLv2, GPLv3, LGPLv2.1, LGPLv3 -->
   <license>TODO</license>
 
-
-  <!-- Url tags are optional, but multiple are allowed, one per tag -->
-  <!-- Optional attribute type can be: website, bugtracker, or repository -->
-  <!-- Example: -->
+  <!-- BB I Tag Di Url Sono Opzionali, Ma Più Tag Sono Consentiti, Uno Per Ciascun Tag -->
+  <!-- CC L'Attributo Opzionale Di Tipo Può Essere: Website, Bugtracker, Oppure Repository -->
+  <!-- CC Esempio: -->
   <!-- <url type="website">http://wiki.ros.org/robot</url> -->
 
+  <!-- BB I Tag Autore Sono Opzionali, Più Tag Sono Consentiti, Uno Per Ciascun Tag -->
+  <!-- CC Gli Autori Non Devono Necessariamente Essere Manutentori, Ma Possono Esserlo -->
+  <!-- CC Esempio: -->
+  <!-- <author email="utente.esempio@esempio.com">Utente Esempio</author> -->
 
-  <!-- Author tags are optional, multiple are allowed, one per tag -->
-  <!-- Authors do not have to be maintainers, but could be -->
-  <!-- Example: -->
-  <!-- <author email="jane.doe@example.com">Jane Doe</author> -->
+  <!-- AA ======================= DEFINIZIONE DELLE DIPENDENZE ======================= -->
 
+  <!-- BB I Tag Di Dipendenza Sono Utilizzati Per Specificare Le Dipendenze Del Pacchetto -->
+  <!-- CC Le Dipendenze Possono Essere Pacchetti Catkin Oppure Dipendenze Di Sistema -->
+  <!-- CC Esempi: -->
+  <!-- CC Utilizzare Il Tag Depend Come Scorciatoia Per Pacchetti Che Sono Sia Dipendenze Di Compilazione Che Di Esecuzione -->
+  <!-- <depend>roscpp</depend> -->
+  <!-- CC Si Noti Che Questo È Equivalente A Quanto Segue: -->
+  <!-- <build_depend>roscpp</build_depend> -->
+  <!-- <exec_depend>roscpp</exec_depend> -->
+  <!-- CC Utilizzare build_depend Per Pacchetti Necessari Al Momento Della Compilazione: -->
+  <!-- <build_depend>message_generation</build_depend> -->
+  <!-- CC Utilizzare build_export_depend Per Pacchetti Necessari Al Fine Di Compilare Rispetto A Questo Pacchetto: -->
+  <!-- <build_export_depend>message_generation</build_export_depend> -->
+  <!-- CC Utilizzare buildtool_depend Per Pacchetti Di Strumenti Di Compilazione: -->
+  <!-- <buildtool_depend>catkin</buildtool_depend> -->
+  <!-- CC Utilizzare exec_depend Per Pacchetti Necessari Durante Il Tempo Di Esecuzione: -->
+  <!-- <exec_depend>message_runtime</exec_depend> -->
+  <!-- CC Utilizzare test_depend Per Pacchetti Necessari Solo Al Fine Di Eseguire I Test: -->
+  <!-- <test_depend>gtest</test_depend> -->
+  <!-- CC Utilizzare doc_depend Per Pacchetti Necessari Solo Al Fine Di Compilare La Documentazione: -->
+  <!-- <doc_depend>doxygen</doc_depend> -->
 
-  <!-- The *depend tags are used to specify dependencies -->
-  <!-- Dependencies can be catkin packages or system dependencies -->
-  <!-- Examples: -->
-  <!-- Use depend as a shortcut for packages that are both build and exec dependencies -->
-  <!--   <depend>roscpp</depend> -->
-  <!--   Note that this is equivalent to the following: -->
-  <!--   <build_depend>roscpp</build_depend> -->
-  <!--   <exec_depend>roscpp</exec_depend> -->
-  <!-- Use build_depend for packages you need at compile time: -->
-  <!--   <build_depend>message_generation</build_depend> -->
-  <!-- Use build_export_depend for packages you need in order to build against this package: -->
-  <!--   <build_export_depend>message_generation</build_export_depend> -->
-  <!-- Use buildtool_depend for build tool packages: -->
-  <!--   <buildtool_depend>catkin</buildtool_depend> -->
-  <!-- Use exec_depend for packages you need at runtime: -->
-  <!--   <exec_depend>message_runtime</exec_depend> -->
-  <!-- Use test_depend for packages you need only for testing: -->
-  <!--   <test_depend>gtest</test_depend> -->
-  <!-- Use doc_depend for packages you need only for building documentation: -->
-  <!--   <doc_depend>doxygen</doc_depend> -->
+  <!-- BB Dipendenze Di Compilazione Del Sistema -->
   <buildtool_depend>catkin</buildtool_depend>
+
+  <!-- BB Dipendenze Per Compilazione Ed Esportazione -->
   <build_depend>roscpp</build_depend>
   <build_depend>rospy</build_depend>
   <build_export_depend>roscpp</build_export_depend>
   <build_export_depend>rospy</build_export_depend>
+
+  <!-- BB Dipendenze Condivise Sia In Fase Di Compilazione Che Di Esecuzione -->
+  <depend>sensor_msgs</depend>
+  <depend>tf2_ros</depend>
+
+  <!-- BB Dipendenze Richieste Esclusivamente Durante Il Tempo Di Esecuzione -->
   <exec_depend>roscpp</exec_depend>
   <exec_depend>rospy</exec_depend>
+  <exec_depend>xacro</exec_depend>
+  <exec_depend>joint_state_publisher</exec_depend>
+  <exec_depend>joint_state_publisher_gui</exec_depend>
+  <exec_depend>robot_state_publisher</exec_depend>
+  <exec_depend>rviz</exec_depend>
 
+  <!-- AA ======================= ESPORTAZIONE DI ALTRI STRUMENTI ======================= -->
 
-  <!-- The export tag contains other, unspecified, tags -->
+  <!-- BB Il Tag Di Esportazione Contiene Altri Tag Non Specificati -->
   <export>
-    <!-- Other tools can request additional information be placed here -->
-
+    <!-- CC Altri Strumenti Possono Richiedere Di Inserire Qui Informazioni Aggiuntive -->
   </export>
 </package>

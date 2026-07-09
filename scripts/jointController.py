@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import os
 import rospy
 import numpy as np
 from sensor_msgs.msg import JointState
@@ -12,40 +13,64 @@ from directKinematics import computeDirectKinematics
 # BB Precisione, Notazione Scientifica, Larghezza Massima Di Stampa
 np.set_printoptions(precision=4, suppress=True, linewidth=120)
 
-# AA Inizializzazione Nodo
+# AA Inizializzazione Del Nodo
 rospy.init_node("jointController")
 
-# AA Configurazione Del Publisher (Canale Di Comunicazione) Per Lo Stato Dei Giunti
+# AA Configurazione Del Publisher Per Lo Stato Dei Giunti
 publisher = rospy.Publisher("/joint_states", JointState, queue_size=10)
-# BB Frequenza Di Aggiornamento
-# CC L'Argomento Indica Il Numero Di Aggiornamenti Da Eseguire In Un Secondo
-rate = rospy.Rate(50) # 50 Hz
 
+# AA Definizione Delle Variabili Dei Giunti Iniziali
+q1 = 0.0
+q2 = 0.0
+q3 = 0.0
 
-# AA Ciclo Principale Di Esecuzione Fino Alla Terminazione Da Terminale
-while not rospy.is_shutdown():
-    # # AA =================== INSERIMENTO VALORI GIUNTI ===================
-    # BB Definizione Posizioni Dei Giunti Nel Messaggio
-    q1 = 3.14           # Valore In Radianti Per Il Giunto 1
-    q2 = -0.428         # Valore In Radianti Per Il Giunto 2
-    q3 = 0.15           # Valore In Metri Per Il Giunto 3
-
-    # BB Controllo Dei Limiti Dei Giunti
-    q1, q2, q3 = kinematicsUtils.checkJointLimits(q1, q2, q3)
-    
-    # BB Creazione Del Messaggio ROS
+# AA Pubblicazione Iniziale Per Configurare RViz Al Momento Dell Avvio
+# BB Pubblica Per Un Breve Periodo Per Allineare I Frame In RViz (Non Basta Un Solo Messaggio)
+for i in range(10):
     msg = kinematicsUtils.createJointStateMsg(q1, q2, q3)
-    
-    # BB Pubblicazione Messaggio Sul Topic
     publisher.publish(msg)
+    rospy.sleep(0.1)
 
-    # AA =================== INIZIO CINEMATICA DIRETTA ===================
-    TWorldEE, positionWorld = computeDirectKinematics(q1, q2, q3)
-    print("Matrice Trasformazione Omogenea world - endEffector:")
-    print(np.round(TWorldEE, 3))
-    print(f"\nPosizione End Effector In World (X, Y, Z): {positionWorld}\n")
+# AA Ciclo Principale Di Input Utente Da Terminale
+while not rospy.is_shutdown():
+    kinematicType = input("Inserisci Il Tipo Di Cinematica (Diretta/Inversa/Esci): ").strip().lower()
+        
+    if kinematicType == "diretta":
+        print("\nCinematica Diretta")
+        try:
+            # BB Acquisizione Dei Valori Inseriti Da Tastiera Per Ogni Giunto
+            inputQ1 = float(input("Inserisci Il Valore Per Il Giunto 1 (q1 In Radianti): "))
+            inputQ2 = float(input("Inserisci Il Valore Per Il Giunto 2 (q2 In Radianti): "))
+            inputQ3 = float(input("Inserisci Il Valore Per Il Giunto 3 (q3 In Metri):    "))
+        except ValueError:
+            print("[ERRORE] Inserimento Non Valido. Digitare Esclusivamente Numeri.")
+            continue
+            
+        # BB Controllo Dei Limiti Fisici E Saturazione
+        q1, q2, q3 = kinematicsUtils.checkJointLimits(inputQ1, inputQ2, inputQ3)
+        
+        # BB Calcolo E Stampa Della Posa Dell End Effector Una Sola Volta
+        tWorldEE, positionWorld = computeDirectKinematics(q1, q2, q3)
+        print("\nMatrice Trasformazione Omogenea world - endEffector:")
+        print(np.round(tWorldEE, 3))
+        print(f"\nPosizione End Effector In World (X, Y, Z): {positionWorld}\n")
+        
+        # BB Pubblicazione Del Nuovo Stato Per Aggiornare RViz
+        # CC (Si Potrebbe Pubblicare Più Volte Come Prima Per Sicurezza, Ma Anche Con Una Funziona)
+        msg = kinematicsUtils.createJointStateMsg(q1, q2, q3)
+        publisher.publish(msg)
+        rospy.sleep(0.02)
+        
+    elif kinematicType == "inversa":
+        print("\nModalità Cinematica Inversa")
+        # CC Spazio Vuoto Riservato Per Gli Sviluppi Futuri Della Cinematica Inversa
+        print("[INFO] Algoritmo Di Cinematica Inversa Da Implementare.")
+    
+    elif kinematicType == "esci":
+        # BB Spegnimento Del Nodo ROS E Chiusura Forzata Di Tutti I Thread
+        rospy.signal_shutdown("Richiesta Chiusura Utente")
+        os._exit(0)
 
-    # AA ==================== FINE CINEMATICA DIRETTA ====================
-
-    # BB Sospensione Per Rispettare La Frequenza Impostata
-    rate.sleep()
+    else:
+        # CC Messaggio Di Avviso Per Scelte Non Valide
+        print("[ATTENZIONE] Opzione Non Valida. Riprovare.")
