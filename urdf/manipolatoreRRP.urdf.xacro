@@ -111,7 +111,7 @@
         <parent link="RF0"/>
         <child link="RF1"/>
         <!-- DD Posizionamento In Cima Al Primo Link (Altezza L1 Più Diametro Della Sfera Di Giunzione) -->
-        <origin xyz="0 0 ${l1 + (jointRadius * 2)}" rpy="0 0 0"/> 
+        <origin xyz="0 0 ${jointRadius + l1 + jointRadius}" rpy="0 0 0"/> 
         <axis xyz="0 1 0"/>
         <!-- DD Movimento Da -90 gradi a +45 gradi Per Evitare Collisioni -->
         <!-- DD Non Va Oltre La Verticale Per Evitare Ridondanza Perche Si Può Raggiungere Lo Stesso Punto Andando A Usare Anche Il Giunto 1 -->
@@ -138,7 +138,7 @@
         </visual>
         <visual>
             <!-- DD Posizionamento Della Guida Del Prismatico All'Estremità Del Secondo Braccio (Lunghezza L2 Più Diametro Sfera) -->
-            <origin xyz="${l2 + (jointRadius * 2)} 0 0" rpy="0 0 0"/>
+            <origin xyz="${jointRadius + l2 + (boxSize/2)} 0 0" rpy="0 0 0"/>
             <geometry>
                 <box size="${boxSize} ${boxSize} ${boxSize}"/>
             </geometry>

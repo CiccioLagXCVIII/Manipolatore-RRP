@@ -169,23 +169,3 @@ def getTransformationMatrix(translation, rotation):
     # CC L'Ultima Riga Resta [0, 0, 0, 1] Perché È Una Matrice Omogenea
 
     return transformationMatrix
-
-
-# AA Funzione Di Background Per La Pubblicazione Continua Dello Stato Dei Giunti
-def publishJointStates():
-    # BB Frequenza Di Aggiornamento Del Thread Interno
-    rate = rospy.Rate(50) # 50 Hz
-    
-    # BB Ciclo Di Pubblicazione Continuo Per Mantenere RViz Aggiornato In Tempo Reale
-    while not rospy.is_shutdown():
-        # CC Lettura Sicura Delle Variabili Condivise Tramite Mutex
-        with jointLock:
-            q1 = currentQ1
-            q2 = currentQ2
-            q3 = currentQ3
-            
-        # CC Creazione E Pubblicazione Del Messaggio JointState
-        msg = kinematicsUtils.createJointStateMsg(q1, q2, q3)
-        publisher.publish(msg)
-        
-        rate.sleep()

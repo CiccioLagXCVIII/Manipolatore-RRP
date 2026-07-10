@@ -56,13 +56,17 @@ def computeTransformMatrix(q1, q2, q3):
     l2 = kinematicsUtils.l2
     l3 = kinematicsUtils.l3
     jointRadius = kinematicsUtils.jointRadius
+    boxSize = kinematicsUtils.boxSize
 
     # BB Definizione Tabella DH Per Il Robot RRP
     # CC Dizionario Chiave-Valore Dove La Chiave Rappresenta Il Numero Del Link E Il Valore È La Lista Dei Parametri DH [Theta, D, A, Alpha]
+    d1 = jointRadius + l1 + jointRadius         # Distanza Dal RF0 Al RF1
+    d2 = jointRadius + l2 + (0.5 * boxSize)     # Distanza Dal RF1 Al RF2
+    d3 = q3 - l3                                # Distanza Dal RF2 Al RF End Effector
     tableDH = {
-        1: [q1, l1 + 2 * jointRadius, 0.0, -np.pi / 2.0],   # Da RF0 A RF1 
-        2: [q2, 0.0, l2 + 2 * jointRadius, np.pi / 2.0],    # Da RF1 A RF2 
-        3: [0.0, q3 - l3, 0.0, -np.pi]                      # Da RF2 A End Effector
+        1: [q1, d1, 0.0, -np.pi / 2.0],  # Da RF0 A RF1 
+        2: [q2, d2, 0.0, np.pi / 2.0],   # Da RF1 A RF2 
+        3: [0.0, d3, 0.0, -np.pi]        # Da RF2 A End Effector
     } 
     # L'EE Si Trova Alla Fine Del Link 3 (l3) Ma La Distanza Effettiva Dell'End Effector Da RF2 È q3 - l3 (A Riposo Vale -l3 Infatti L'EE È Verso Il Basso).
     # E Il Suo RF È Ruotato Di 90 Gradi Attorno A X Rispetto A RF2
