@@ -36,16 +36,16 @@
 
 <xacro:macro name="colorDef">
       <material name="baseColor">
-            <color rgba="0.22 0.24 0.26 1.0"/>
+            <color rgba="0.22 0.24 0.26 1"/>
       </material>
       <material name="linkColor">
-            <color rgba="0.65 0.65 0.65 1.0"/>
+            <color rgba="0.65 0.65 0.65 1"/>
       </material>
       <material name="jointColor"> 
-            <color rgba="0.95 0.72 0.08 1.0"/>
+            <color rgba="0.95 0.72 0.08 0.75"/>
       </material>
       <material name="endEffectorColor">
-            <color rgba="0.8 0.12 0.12 1.0"/>
+            <color rgba="0.8 0.12 0.12 1"/>
       </material>
 </xacro:macro>
 
@@ -151,8 +151,8 @@
     <joint name="giunto3" type="prismatic">
         <parent link="RF1"/>
         <child link="RF2"/>
-        <!-- DD Posizionamento Sull'Asse Della Guida All'Estremità Del Secondo Braccio (Lunghezza L2 Più Diametro Sfera) -->
-        <origin xyz="${l2 + (jointRadius * 2)} 0 0" rpy="0 0 0"/> 
+        <!-- DD Posizionamento Sull'Asse Della Guida All'Estremità Del Secondo Braccio (Raggio Sfera + Lunghezza L2 + Metà Dimensione Box) -->
+        <origin xyz="${jointRadius + l2 + (boxSize/2)} 0 0" rpy="0 0 0"/> 
         <axis xyz="0 0 1"/>
         <limit effort="100" velocity="1.0" lower="0" upper="${l3 - (eeFingerLength)}"/> 
     </joint>

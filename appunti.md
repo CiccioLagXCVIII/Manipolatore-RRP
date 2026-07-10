@@ -100,5 +100,5 @@ $$^{i-1}T_i = \begin{pmatrix} c\theta_i & -s\theta_i c\alpha_i & s\theta_i s\alp
 
 ## Comandi Per Avviare Il Nodo ROS
 rm -f /root/.bash_history  && history -c  && history -w && clear
-roslaunch manipolatoreRRP manipolatoreRRP.launch 
+roslaunch manipolatoreRRP manipolatoreRRP.launch
 roslaunch manipolatoreRRP manipolatoreRRP.launch gui:=false
