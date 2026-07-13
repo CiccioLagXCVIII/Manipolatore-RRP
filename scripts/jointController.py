@@ -69,10 +69,10 @@ while not rospy.is_shutdown():
     elif kinematicType == "inversa":
         print("\nCinematica Inversa")
         try:
-            # BB Acquisizione Dei Valori Inseriti Da Tastiera Per Ogni Giunto
-            targetX = float(input("Inserisci Il Valore Per Il Giunto 1 (q1 In Radianti): "))
-            targetY = float(input("Inserisci Il Valore Per Il Giunto 2 (q2 In Radianti): "))
-            targetZ = float(input("Inserisci Il Valore Per Il Giunto 3 (q3 In Metri):    "))
+            # BB Acquisizione Delle Coordinate Target Per L'End Effector
+            targetX = float(input("Inserisci La Coordinata Target X (In Metri): "))
+            targetY = float(input("Inserisci La Coordinata Target Y (In Metri): "))
+            targetZ = float(input("Inserisci La Coordinata Target Z (In Metri): "))
         except ValueError:
             print("[ERRORE] Inserimento Non Valido. Digitare Esclusivamente Numeri.")
             continue
