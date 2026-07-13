@@ -21,7 +21,7 @@
 
 <!-- BB Giunti -->
 <!-- CC Non E Piu Necessario Definire La Proprieta Perche Gia Presente Di Default In Xacro -->
-<!-- <xacro:property name="pi" value="3.14159265359" /> -->
+<!-- <xacro:property name="pi" value="3.14159erm265359" /> -->
 <xacro:property name="jointRadius" value="${robotParams['jointRadius']}" />     <!-- Raggio Sfere Giunti Revolute (Diametro 10cm) -->
 <xacro:property name="boxSize" value="${robotParams['boxSize']}" />             <!-- Dimensione Box Giunto Prismatico (Lato 11cm) -->
 
@@ -89,15 +89,15 @@
     <link name="RF0">
         <visual>
             <!-- DD Sfera Centrata Sull'Asse Di Rotazione E Sollevata Di Metà Raggio Per Poggiarla Sulla Base -->
-            <origin xyz="0 0 ${jointRadius / 2.0}" rpy="0 0 0"/>
+            <origin xyz="0 0 ${jointRadius}" rpy="0 0 0"/>
             <geometry>
                 <sphere radius="${jointRadius}"/>
             </geometry>
             <material name="jointColor"/>
         </visual>
         <visual>
-            <!-- DD Traslazione Di Metà Colonna Più Raggio Sfera Per Evitare Che Entri Dentro La Base -->
-            <origin xyz="0 0 ${(l1 / 2.0) + jointRadius}" rpy="0 0 0"/>
+            <!-- DD Traslazione Di Metà Lunghezza Più Diametro Sfera Per Evitare Che Entri Dentro -->
+            <origin xyz="0 0 ${(l1 / 2.0) + (2 * jointRadius)}" rpy="0 0 0"/>
             <geometry>
                     <cylinder radius="${linkRadius}" length="${l1}" />
             </geometry>
@@ -110,8 +110,9 @@
     <joint name="giunto2" type="revolute">
         <parent link="RF0"/>
         <child link="RF1"/>
-        <!-- DD Posizionamento In Cima Al Primo Link (Altezza L1 Più Diametro Della Sfera Di Giunzione) -->
-        <origin xyz="0 0 ${jointRadius + l1 + jointRadius}" rpy="0 0 0"/> 
+        <!-- DD Posizionamento In Cima Al Primo Link -->
+        <!-- DD Diametro Sfera Giunto 1 + Lunghezza Link 1 + Raggio Sfera Giunto 2 -->
+        <origin xyz="0 0 ${2*jointRadius + l1 + jointRadius}" rpy="0 0 0"/> 
         <axis xyz="0 1 0"/>
         <!-- DD Movimento Da -90 gradi a +45 gradi Per Evitare Collisioni -->
         <!-- DD Non Va Oltre La Verticale Per Evitare Ridondanza Perche Si Può Raggiungere Lo Stesso Punto Andando A Usare Anche Il Giunto 1 -->
@@ -160,8 +161,9 @@
     <!-- BB Cilindro Di Scorrimento (Link 2) -->
     <link name="RF2">
         <visual>
-            <!-- DD Asta Centrata Nell'Origine Del Box E Spostata Di Metà Lunghezza E Orientata Verticalmente Per Scorrere Lungo Z -->
-            <origin xyz="0 0 ${-l3/2}" rpy="0 0 0"/>
+            <!-- DD Link Centrato Nell'Origine Del Box Orientato Verticalmente Per Scorrere Lungo Z -->
+            <!-- DD Spostato Di Metà Lunghezza Lato Box + Meta Lunghezza Link -->
+            <origin xyz="0 0 ${-(l3/2 + boxSize/2)}" rpy="0 0 0"/>
             <geometry>
                     <cylinder radius="${linkRadius}" length="${l3}" />
             </geometry>
@@ -174,8 +176,9 @@
     <joint name="giuntoEE" type="fixed">
         <parent link="RF2"/>
         <child link="endEffector"/>
-        <!-- DD Spostato Sulla Punta Inferiore Dell'Asta E Ruotato Di Centottanta Gradi Su Roll -->
-        <origin xyz="0 0 -${l3}" rpy="${pi} 0 0"/>
+        <!-- DD Ruotato Verso Il Basso Di 180° -->
+        <!-- DD Spostato In Basso Di Metà Lunghezza Lato Box + Lunghezza Del Link -->
+        <origin xyz="0 0 ${-(boxSize/2 + l3)}" rpy="${pi} 0 0"/>
         <axis xyz="0 0 1"/>
     </joint>
 
