@@ -1,0 +1,46 @@
+{
+  // AA =========================================================================
+  // AA Configurazione Dei Terminali Automatici Al Lancio Del Workspace
+  // AA =========================================================================
+  // BB Impostazioni Di Esecuzione E Chiusura Dei Terminali Integrati
+  "autorun": true,
+  "autokill": true,
+  // BB Definizione Dei Terminali E Dei Comandi Di Avvio Di ROS
+  "terminals": [
+    {
+      // CC Terminale Dedicato Al Lancio Del Nodo Principale ROS Master
+      "name": "ROS Core",
+      "icon": "play",
+      "color": "terminal.ansiRed",
+      // CC Forza La Inizializzazione E La Visualizzazione Del Terminale A Schermo
+      "open": true,
+      "commands": [
+        "source /opt/ros/noetic/setup.bash && roscore"
+      ]
+    },
+    {
+      // CC Terminale Per La Compilazione E La Esecuzione Dei Nodi
+      "name": "ROS Launch",
+      "icon": "rocket",
+      "color": "terminal.ansiBlue",
+      "split": "ROS Core",
+      "cwd": "/root/catkin_ws/src/manipolatoreRRP",
+      // DD Descrizione Geometrica Del Manipolatore Con Due Giunti Rotanti E Un Giunto Prismatico
+      "focus": true,
+      "commands": [
+        "catkinMake",
+        "allClear"
+      ]
+    },
+    // CC Terminale Dedicato Al Monitoraggio Attivo Dei Topic Di ROS
+    // {
+    //  "name": "ROS Topic Monitor",
+    //  "icon": "list-unordered",
+    //  "color": "terminal.ansiGreen",
+    //  "split": "ROS Launch",
+    //  "commands": [
+    //    "sleep 3 && source /opt/ros/noetic/setup.bash && rostopic list"
+    //  ]
+    //}
+  ]
+}

@@ -1,0 +1,85 @@
+{
+    // AA Configurazione Dei Percorsi Di Ricerca Per Il Completamento Automatico Di Python
+    // BB Definizione Dei Percorsi Extra Per Le Librerie Di ROS 1
+    // BB Consente A Pylance Di Trovare I Moduli Di Sistema Di ROS Noetic
+    "python.analysis.extraPaths": [
+        "/opt/ros/noetic/lib/python3/dist-packages",
+        "/root/catkin_ws/devel/lib/python3/dist-packages",
+        "${workspaceFolder}/src"
+    ],
+    // BB Abilita Il Completamento Automatico Dei Messaggi E Dei Servizi Di ROS Noetic
+    "python.autoComplete.extraPaths": [
+        "/opt/ros/noetic/lib/python3/dist-packages",
+        "/root/catkin_ws/devel/lib/python3/dist-packages",
+        "${workspaceFolder}/src"
+    ],
+    // AA Configurazione Dei Livelli Di Severità Di Pylance Per NumPy
+    // BB Silenziamento Dei Falsi Positivi Sui Moduli Compilati In C
+    // BB Evita La Segnalazione Di Errori Di Accesso Agli Attributi Per NumPy
+    "python.analysis.diagnosticSeverityOverrides": {
+        "reportAttributeAccessIssue": "none",
+        "reportGeneralTypeIssues": "none",
+        "reportOperatorIssue": "none"
+    },
+    // BB Abilitazione Della Ricerca Dei Tipi Nelle Librerie Esterne
+    "python.analysis.useLibraryCodeForTypes": true,
+    // BB Disattivazione Del Controllo Rigido Dei Tipi Per Ambienti Dinamici Come ROS
+    "python.analysis.typeCheckingMode": "off",
+    // AA Configurazione Delle Associazioni Dei File Per ROS Noetic
+    // BB Mappatura Delle Estensioni Dei File Ai Rispettivi Linguaggi
+    // BB Consente Di Abilitare La Sintassi XML Per I File Di Lancio E Di Descrizione
+    "files.associations": {
+        "*.launch": "xml",
+        "*.urdf": "xml",
+        "*.xacro": "xml",
+        "*.msg": "msg",
+        "*.srv": "srv"
+    },
+    // AA Configurazione Di C++ IntelliSense Per I Pacchetti Di ROS
+    // BB Percorsi Di Inclusione Per Le Librerie E I Messaggi Generati
+    // BB Permette Il Corretto Funzionamento Del Completamento Automatico In C++
+    "C_Cpp.default.includePath": [
+        "/opt/ros/noetic/include/**",
+        "/root/catkin_ws/devel/include/**",
+        "${workspaceFolder}/src/**"
+    ],
+    // AA Configurazione Estetica E Personalizzazione Colori Con Peacock
+    // BB Modifica Dei Colori Per La Barra Di Stato E Del Titolo Di VS Code
+    // BB Applica Colori Personalizzati Alla Barra Di Stato E Del Titolo
+    "workbench.colorCustomizations": {
+        "commandCenter.border": "#e7e7e799",
+        "sash.hoverBorder": "#ff9800",
+        "statusBar.background": "#e65100",
+        "statusBar.foreground": "#e7e7e7",
+        "statusBarItem.hoverBackground": "#ff9800",
+        "statusBarItem.remoteBackground": "#e65100",
+        "statusBarItem.remoteForeground": "#e7e7e7",
+        "titleBar.activeBackground": "#e65100",
+        "titleBar.activeForeground": "#e7e7e7",
+        "titleBar.inactiveBackground": "#e6510099",
+        "titleBar.inactiveForeground": "#e7e7e799"
+    },
+    // BB Evita Che Peacock Modifichi Il Colore Della Barra Delle Attività
+    "peacock.affectActivityBar": false,
+    "peacock.remoteColor": "#e65100",
+    // AA Configurazione Per Sviluppo Remoto In Docker
+    // BB Impostazioni Di Esecuzione Delle Estensioni Dentro Il Container
+    // BB Forza La Esecuzione Di Commands Dentro Il Container Docker
+    "remote.extensionKind": {
+        "fabiospampinato.vscode-commands": [
+            "workspace"
+        ]
+    },
+    // AA Configurazione Di Pulsanti Nella Barra Di Stato
+    // BB Definizione Dei Pulsanti Fisici Tramite Il Pacchetto Commands
+    // BB Associa Il Pulsante Al Comando Corretto Per Avviare I Terminali
+    "commands.commands": [
+        {
+            "text": "$(play) ROS Terminals",
+            "tooltip": "Avvia I Terminali Di ROS",
+            "command": "terminals.runTerminals",
+            "alignment": "left",
+            "priority": 100
+        }
+    ]
+}
