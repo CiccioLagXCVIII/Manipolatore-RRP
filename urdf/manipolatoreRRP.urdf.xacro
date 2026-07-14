@@ -155,7 +155,7 @@
         <!-- DD Posizionamento Sull'Asse Della Guida All'Estremità Del Secondo Braccio (Raggio Sfera + Lunghezza L2 + Metà Dimensione Box) -->
         <origin xyz="${jointRadius + l2 + (boxSize/2)} 0 0" rpy="0 0 0"/> 
         <axis xyz="0 0 1"/>
-        <limit effort="100" velocity="1.0" lower="0" upper="${l3 - (eeFingerLength)}"/> 
+        <limit effort="100" velocity="1.0" lower="0" upper="${l3}"/> 
     </joint>
 
     <!-- BB Cilindro Di Scorrimento (Link 2) -->
@@ -163,7 +163,7 @@
         <visual>
             <!-- DD Link Centrato Nell'Origine Del Box Orientato Verticalmente Per Scorrere Lungo Z -->
             <!-- DD Spostato Di Metà Lunghezza Lato Box + Meta Lunghezza Link -->
-            <origin xyz="0 0 ${-(l3/2 + boxSize/2)}" rpy="0 0 0"/>
+            <origin xyz="0 0 -${(l3/2) + (boxSize/2)}" rpy="0 0 0"/>
             <geometry>
                     <cylinder radius="${linkRadius}" length="${l3}" />
             </geometry>
