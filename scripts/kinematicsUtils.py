@@ -96,13 +96,13 @@ def checkJointLimits(q1, q2, q3):
         q2 = (np.pi/4)
 
     # BB Controllo Del Giunto Tre
-    # CC Verifica E Limita Il Giunto Prismatico Tra Zero E La Lunghezza Libera Dell'Asta
+    # CC Verifica E Limita Il Giunto Prismatico Tra La Metà Della Dimensione Del Box E La Lunghezza Libera Dell'Asta
     if q3 < 0:
-        rospy.logwarn("Valore Giunto 3 Inferiore Al Limite Minimo [0]")
-        q3 = 0.0
-    elif q3 > (l3 - eeFingerLength):
-        rospy.logwarn(f"Valore Giunto 3 Superiore Al Limite Massimo [ {l3 - eeFingerLength} ]")
-        q3 = l3 - eeFingerLength
+        rospy.logwarn(f"Valore Giunto 3 Inferiore Al Limite Minimo [ {boxSize/2} ]")
+        q3 = boxSize/2
+    elif q3 > (l3):
+        rospy.logwarn(f"Valore Giunto 3 Superiore Al Limite Massimo [ {l3} ]")
+        q3 = l3
 
     q1, q2, q3 = float(q1), float(q2), float(q3)
 
