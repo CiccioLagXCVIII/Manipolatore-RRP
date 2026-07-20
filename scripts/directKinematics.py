@@ -51,7 +51,7 @@ def calculateTransformationMatrix(theta, d, a, alpha):
 def computeTransformMatrix(q1, q2, q3):
     # BB Importazione Dei Parametri Fisici Del Robot Dal Server ROS
     kinematicsUtils.loadRobotParameters()
-    l1 = (kinematicsUtils.l1)
+    l1 = kinematicsUtils.l1
     l2 = kinematicsUtils.l2
     l3 = kinematicsUtils.l3
     jointRadius = kinematicsUtils.jointRadius

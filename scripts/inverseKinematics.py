@@ -1,19 +1,95 @@
+#!/usr/bin/env python3
+
+# AA Spiegazione Approfondita Nel File "5) Cinematica Inversa RRP"
+
+import rospy
 import numpy as np
+import kinematicsUtils
 
-# BB Calcolo Dei Valori Dei Giunti
-# CC Riceve La Posizione Target E Calcola I Tre Valori Dei Giunti
 def computeInverseKinematics(xTarget, yTarget, zTarget):
-    # BB Le Coordinate Target Ovviamente Sono Espresse Rispetto A RF World Quindi Si Devono Trasformare Nel Sistema Di Riferimento Del Primo Giunto
-    # CC Rispetto A RF World, Il Primo Giunto RF0, Si Trova A 2m E Sullla Base Che È Alta 6cm 
-    # CC Quindi Un Qualsiasi Punto Target Espresso Rispetto A RF World, Poichè RF0 È Spostato In Avanti Di 2m E In Alto Di 6cm, Per Essere Espresso Rispetto A RF0, Si Deve Traslare Di -2m Sull'Asse X E Di -6cm Sull'Asse Z (Per Sovrapporre RF0 A RF World)
-    x = xTarget - 2.0
+    # BB Caricamento Dei Parametri Geometrici Del Robot Dal Parameter Server
+    kinematicsUtils.loadRobotParameters()
+    
+    # CC Assegnazione Delle Variabili
+    worldBase = kinematicsUtils.worldBase
+    baseHeight = kinematicsUtils.baseHeight
+    l1 = kinematicsUtils.l1
+    l2 = kinematicsUtils.l2
+    l3 = kinematicsUtils.l3
+    jointRadius = kinematicsUtils.jointRadius
+    boxSize = kinematicsUtils.boxSize
+
+    # CC Calcolo Valori Della Tabella Di Denavit Hartenberg
+    d1 = 3 * jointRadius + l1
+    a2 = jointRadius + l2 + (boxSize / 2.0)
+
+    # DD Traslazione Delle Coordinate Target Dal Frame World Al Frame Zero Della Base Rotante
+    x = xTarget - worldBase
     y = yTarget
-    z = zTarget - 0.06
+    z = zTarget - baseHeight
 
-    # BB Dall' Equazione ${}^{0}T_{EE} = {}^{0}T_{1} \cdot {}^{1}T_{2} \cdot {}^{2}T_{3} = {}^{0}T_{2} \cdot {}^{2}T_{3}$ Svolgendo Il Prodotto Matriciale
-    # BB A Blocchi Si Ottiene Che ${}^{0}d_{EE}$ (La Posizione Dell' End Effector Rispetto A RF0, Che È L'Input Traslato) È Data Da ${}^{0}R_{2} \cdot {}^{2}d_{EE} + {}^{0}d_{2}$
+    # AA Calcolo Variabile Di Giunto Prismatico q3
+    squareRootArg = x**2 + y**2 + (z - d1)**2 - a2**2
 
+    # BB Verifica Della Condizione Di Esistenza Per Evitare Radici Di Numeri Negativi
+    if squareRootArg < 0.0:
+        rospy.logwarn("Target Non Raggiungibile. Si Trova Fuori Dal Workspace Del Robot.")
+        return None, None, None
 
+    # CC Calcolo Delle Due Possibili Soluzioni Per Il Giunto Prismatico q3
+    # DD Soluzione Con Radice Positiva
+    q3P = (l3 + boxSize / 2.0) + np.sqrt(squareRootArg)
+    # DD Soluzione Con Radice Negativa
+    q3M = (l3 + boxSize / 2.0) - np.sqrt(squareRootArg)
+
+    # DD Scelta Della Soluzione Che Rientra Nei Limiti Del Giunto Prismatico
+    q3 = None
+    if 0.0 <= q3M <= l3:
+        q3 = q3M
+    elif 0.0 <= q3P <= l3:
+        q3 = q3P
+    else:
+        rospy.logwarn("Nessuna Delle Due Soluzioni Di q3 Rientra Nei Limiti Fisici Del Giunto 3")
+        return None, None, None
+
+    # BB Calcolo Distanza d3 Corrispondente Alla Soluzione Selezionata
+    d3 = q3 - (l3 + boxSize / 2.0)
+
+    # AA Calcolo Della Variabile Di Giunto Rotatorio q2
+    # BB Calcolo Raggio Workspace (Ovviamente Si Deve Considerare Il Valore Posivo E Il Valore Negativo)
+    r = np.sqrt(x**2 + y**2)
+
+    # BB Definizione Configurazioni Di Gomito Alto E Gomito Basso
+    # CC Calcolo Valore q2 Gomito Alto Sfruttando Il Raggio Positivo
+    q2Up = np.arctan2(d3 * r - a2 * (z - d1), a2 * r + d3 * (z - d1))
+    # CC Calcolo Valore q2 Gomito Basso Sfruttando Il Raggio Negativo
+    q2Down = np.arctan2(d3 * (-r) - a2 * (z - d1), a2 * (-r) + d3 * (z - d1))
+
+    # DD Selezione Della Configurazione Di Gomito Che Rispetta I Limiti Del Secondo Giunto
+    q2 = None
+    limitMinQ2 = -np.pi / 2.0
+    limitMaxQ2 = np.pi / 4.0
+
+    if limitMinQ2 <= q2Up <= limitMaxQ2:
+        q2 = q2Up
+    elif limitMinQ2 <= q2Down <= limitMaxQ2:
+        q2 = q2Down
+    else:
+        rospy.logwarn("Nessuna Configurazione Di Gomito Per q2 Rientra Nei Limiti Del Giunto")
+        return None, None, None
+
+    # AA Calcolo Della Variabile Di Giunto Rotatorio q1
+    # CC Si Calocola Tramite Arcotangente A Quattro Quadranti
+    denom = d3 * np.sin(q2) + a2 * np.cos(q2)
+
+    if np.abs(denom) < 1e-6:
+        # DD Gestione Del Caso Limite Con Denominatore Nullo Per Evitare Divisioni Per Zero
+        q1 = 0.0
+    else:
+        # DD Calcolo Della Rotazione Della Base Tenendo Conto Del Segno Del denome
+        q1 = np.arctan2(y / denom, x / denom)
+
+    # CC Controllo Dei Valori Dei Giunti Rispetto Ai Limiti Fisici Del Robot
+    q1, q2, q3 = kinematicsUtils.checkJointLimits(q1, q2, q3)
 
     return q1, q2, q3
-    

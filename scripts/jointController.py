@@ -6,7 +6,7 @@ import numpy as np
 from sensor_msgs.msg import JointState
 import kinematicsUtils
 from directKinematics import computeDirectKinematics
-# import inverseKinematics
+from inverseKinematics import computeInverseKinematics
 
 
 # AA Impostazioni Stampa Di NumPy
@@ -69,13 +69,40 @@ while not rospy.is_shutdown():
     elif kinematicType == "inversa":
         print("\nCinematica Inversa")
         try:
-            # BB Acquisizione Delle Coordinate Target Per L'End Effector
+            # BB Acquisizione Delle Coordinate Target Per L End Effector
             targetX = float(input("Inserisci La Coordinata Target X (In Metri): "))
             targetY = float(input("Inserisci La Coordinata Target Y (In Metri): "))
             targetZ = float(input("Inserisci La Coordinata Target Z (In Metri): "))
         except ValueError:
             print("[ERRORE] Inserimento Non Valido. Digitare Esclusivamente Numeri.")
             continue
+
+        # BB Controllo Della Raggiungibilita Dello Spazio Di Lavoro Prima Di Calcolare I Giunti
+        if not kinematicsUtils.checkWorkspace(targetX, targetY, targetZ):
+            print("[ATTENZIONE] Il Target Inserito Si Trova Fuori Dallo Spazio Operativo Consentito.")
+            continue
+
+        # BB Esecuzione Dei Calcoli Per Risolvere La Cinematica Inversa
+        solQ1, solQ2, solQ3 = computeInverseKinematics(targetX, targetY, targetZ)
+
+        if solQ1 is not None:
+            # CC Aggiornamento Delle Variabili Locali Dei Giunti Con I Nuovi Valori
+            q1, q2, q3 = solQ1, solQ2, solQ3
+            print(f"\nSoluzione Trovata:")
+            print(f"\t Giunto 1 (q1): {q1:.4f} Rad")
+            print(f"\t Giunto 2 (q2): {q2:.4f} Rad")
+            print(f"\t Giunto 3 (q3): {q3:.4f} Metri")
+
+            # CC Valutazione Dell Indice Di Singolarita Sulla Configurazione Raggiunta
+            detJ, statusSing = kinematicsUtils.checkSingularity(q1, q2, q3)
+            print(f"\t Determinante Jacobiano: {detJ:.6f} ({statusSing})")
+
+            # CC Pubblicazione Del Nuovo Stato Dei Giunti Su ROS Per Aggiornare RViz
+            msg = kinematicsUtils.createJointStateMsg(q1, q2, q3)
+            publisher.publish(msg)
+            rospy.sleep(0.02)
+        else:
+            print("[ERRORE] Impossibile Trovare Una Soluzione Valida Per I Giunti.")
     
     elif kinematicType == "esci":
         # BB Spegnimento Del Nodo ROS E Chiusura Forzata Di Tutti I Thread

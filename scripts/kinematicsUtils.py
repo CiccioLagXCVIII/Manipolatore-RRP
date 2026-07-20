@@ -169,3 +169,72 @@ def getTransformationMatrix(translation, rotation):
     # CC L'Ultima Riga Resta [0, 0, 0, 1] Perché È Una Matrice Omogenea
 
     return transformationMatrix
+
+# AA Funzione Che Controlla Se Il Target È Raggiungibile All'Interno Del Workspace Del Robot
+# AA Funzione Che Controlla Se Il Target È Raggiungibile All'Interno Del Workspace Del Robot
+def checkWorkspace(xTarget, yTarget, zTarget):
+    # BB Caricamento Dei Parametri Geometrici Del Robot Dal Parameter Server
+    loadRobotParameters()
+
+    # CC Definizioni Valori Della Tabella Di Denavit Hartenberg
+    d1 = 3 * jointRadius + l1
+    a2 = jointRadius + l2 + (boxSize / 2.0)
+
+    # BB Calcolo Dei Raggi Della Circonferenza
+    rDMax = np.sqrt(a2**2 + (l3 + (boxSize / 2.0))**2)
+    rDMin = np.sqrt(a2**2 + (boxSize / 2.0)**2)
+
+    # BB Calcolo Coordinate Del Centro Del Secondo Giunto Nel Frame Globale World
+    xShoulder = worldBase
+    yShoulder = 0.0
+    zShoulder = baseHeight + d1
+
+    # CC Calcolo Distanza Euclidea Tra Il Giunto 2 E End Effector
+    rD = np.sqrt((xTarget - xShoulder)**2 + (yTarget - yShoulder)**2 + (zTarget - zShoulder)**2)
+
+    # BB Verifica Se La Distanza Calcolata Rientra Nei Limiti Del Workspace Del Robot
+    # CC Il Valore Di Ritorno Sara True Se Il Target E Raggiungibile Altrimenti False
+    if rD < rDMin:
+        rospy.logwarn(f"Target Troppo Vicino Al Giunto 2 Del Robot: Distanza Calcolata {rD:.4f} Inferiore A {rDMin:.4f}")
+        return False
+    elif rD > rDMax:
+        rospy.logwarn(f"Target Fuori Dal Raggio Di Estensione Massimo: Distanza Calcolata {rD:.4f} Superiore A {rDMax:.4f}")
+        return False
+
+    # CC Rimossa La Verifica Sulla Distanza Orizzontale Minore Di a2 Perche Il Giunto Di Spalla
+    # DD Permette Di Ruotare Di Beccheggio Riducendo La Proiezione Orizzontale Fino A Valori Molto Piccoli
+
+    return True
+
+
+def checkSingularity(q1, q2, q3):
+    # BB Caricamento Dei Parametri Geometrici Del Robot Dal Parameter Server
+    loadRobotParameters()
+
+    # CC Definizione Dei Parametri Della Tabella Di Denavit Hartenberg
+    a2 = jointRadius + l2 + (boxSize / 2.0)
+    d3 = q3 - (l3 + (boxSize / 2.0))
+
+    # BB Calcolo Determinante Della Matrice Jacobiana
+    # CC Equazione Determinante Calcolata Nel File "5) cinematicaInversaRRP.pdf"
+    detJ = -d3 * (d3 * np.sin(q2) + a2 * np.cos(q2))
+
+    # CC Analisi Delle Singolarita Geometriche
+    # DD Condizione 1: d_3 = 0
+    firstCond = np.abs(d3)
+    # DD Condizione 2: d_3 \sin(q_2) + a_2 \cos(q_2) = 0
+    secondCond = np.abs(d3 * np.sin(q2) + a2 * np.cos(q2))
+
+    # BB Logic Per Identificare Vicinanza A Configurazioni Singolari
+    # CC Soglia Di Tolleranza Definizione Di Condizione Singolare
+    tolerance = 1e-3
+    singularityStatus = "Sicuro"
+
+    if firstCond < tolerance:
+        singularityStatus = "Singolarita Giunto Prismatico d3 Vicino A Zero"
+        rospy.logwarn(f"Attenzione: Robot Vicino A Singolarita Prismatico Con d3 = {d3:.4f}")
+    elif secondCond < tolerance:
+        singularityStatus = "Singolarita Giunto 2 Con Raggio Vicino A Zero"
+        rospy.logwarn(f"Attenzione: Robot Vicino A Singolarita Di Allineamento Con Raggio = {secondCond:.4f}")
+
+    return detJ, singularityStatus
