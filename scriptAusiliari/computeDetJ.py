@@ -13,6 +13,8 @@ J = Matrix([
     [        0,       -A,       cos(q2)]
 ])
 
+
+
 sp.pprint(J)
 
 print("Determinante Matrice J:")

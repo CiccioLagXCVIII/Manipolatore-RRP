@@ -1,6 +1,7 @@
 import numpy as np
 import kinematicsUtils
 
+
 # AA Funzione Che Calcola Le Matrici Di Trasformazione Necessarie Per Calcolare La Matrice Di Trasformazione 
 def calculateTransformationMatrix(theta, d, a, alpha):
     # BB $R_z(\theta_i)$: Rotazione Attorno A $Z_{i-1}$ Di Angolo $\theta_i$ (*Variabile Di Giunto*)
@@ -121,3 +122,6 @@ def computeDirectKinematics(q1, q2, q3):
     positionWorld = TWorldEE[:3, 3]
 
     return TWorldEE, positionWorld
+
+
+# AA
