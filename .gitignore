@@ -1,6 +1,8 @@
-# File Da Non Caricare Su GitHub
-contesto.md
-statoDelCodice.md
-
-test.py
-test.md
+__pycache__/
+*.pyc
+*.pyo
+.vscode/
+frames.gv
+frames.pdf
+*.pyc
+__pycache__/

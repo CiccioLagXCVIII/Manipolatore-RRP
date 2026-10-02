@@ -9,12 +9,12 @@
   <!-- BB Un Tag Di Manutentore Richiesto, Più Tag Consentiti, Una Sola Persona Per Ciascun Tag -->
   <!-- CC Esempio: -->
   <!-- <maintainer email="utente.esempio@esempio.com">Utente Esempio</maintainer> -->
-  <maintainer email="root@todo.todo">root</maintainer>
+  <maintainer email="francesco.loverde@studenti.unipg.it">Francesco Lo Verde</maintainer>
 
   <!-- BB Un Tag Di Licenza Richiesto, Più Tag Consentiti, Una Sola Licenza Per Ciascun Tag -->
   <!-- CC Stringhe Di Licenza Comunemente Utilizzate: -->
   <!-- BSD, MIT, Licenza Software Boost, GPLv2, GPLv3, LGPLv2.1, LGPLv3 -->
-  <license>TODO</license>
+  <license>MIT</license>
 
   <!-- BB I Tag Di Url Sono Opzionali, Ma Più Tag Sono Consentiti, Uno Per Ciascun Tag -->
   <!-- CC L'Attributo Opzionale Di Tipo Può Essere: Website, Bugtracker, Oppure Repository -->
@@ -53,9 +53,7 @@
   <buildtool_depend>catkin</buildtool_depend>
 
   <!-- BB Dipendenze Per Compilazione Ed Esportazione -->
-  <build_depend>roscpp</build_depend>
   <build_depend>rospy</build_depend>
-  <build_export_depend>roscpp</build_export_depend>
   <build_export_depend>rospy</build_export_depend>
 
   <!-- BB Dipendenze Condivise Sia In Fase Di Compilazione Che Di Esecuzione -->
@@ -63,13 +61,17 @@
   <depend>tf2_ros</depend>
 
   <!-- BB Dipendenze Richieste Esclusivamente Durante Il Tempo Di Esecuzione -->
-  <exec_depend>roscpp</exec_depend>
   <exec_depend>rospy</exec_depend>
   <exec_depend>xacro</exec_depend>
   <exec_depend>joint_state_publisher</exec_depend>
   <exec_depend>joint_state_publisher_gui</exec_depend>
   <exec_depend>robot_state_publisher</exec_depend>
   <exec_depend>rviz</exec_depend>
+
+  <!-- Dipendenze Di Python -->
+  <exec_depend>python3-numpy</exec_depend>
+  <exec_depend>python3-matplotlib</exec_depend>
+  <exec_depend>python3-sympy</exec_depend>
 
   <!-- AA ======================= ESPORTAZIONE DI ALTRI STRUMENTI ======================= -->
 

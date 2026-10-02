@@ -9,7 +9,7 @@ import kinematicsUtils
 def computeInverseKinematics(xTarget, yTarget, zTarget):
     # BB Caricamento Dei Parametri Geometrici Del Robot Dal Parameter Server
     kinematicsUtils.loadRobotParameters()
-    
+
     # CC Assegnazione Delle Variabili
     worldBase = kinematicsUtils.worldBase
     baseHeight = kinematicsUtils.baseHeight
@@ -69,8 +69,10 @@ def computeInverseKinematics(xTarget, yTarget, zTarget):
     q2 = None
     limitMinQ2 = -np.pi / 2.0
     limitMaxQ2 = np.pi / 4.0
-
-    if limitMinQ2 <= q2Up <= limitMaxQ2:
+    if limitMinQ2 <= q2Up <= limitMaxQ2 and limitMinQ2 <= q2Down <= limitMaxQ2:
+        # EE Se Entrambe Le Configurazioni Rientrano Nei Limiti, Si Sceglie La Configurazione Di Gomito Alto
+        q2 = q2Up
+    elif limitMinQ2 <= q2Up <= limitMaxQ2:
         q2 = q2Up
     elif limitMinQ2 <= q2Down <= limitMaxQ2:
         q2 = q2Down
@@ -86,7 +88,7 @@ def computeInverseKinematics(xTarget, yTarget, zTarget):
         # DD Gestione Del Caso Limite Con Denominatore Nullo Per Evitare Divisioni Per Zero
         q1 = 0.0
     else:
-        # DD Calcolo Della Rotazione Della Base Tenendo Conto Del Segno Del denome
+        # DD Calcolo Della Rotazione Della Base Tenendo Conto Del Segno Del denominatore
         q1 = np.arctan2(y / denom, x / denom)
 
     # CC Controllo Dei Valori Dei Giunti Rispetto Ai Limiti Fisici Del Robot

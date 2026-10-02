@@ -21,10 +21,10 @@
 
     <!-- BB Avvio Publisher Standard Se L'Argomento GUI E Falso -->
     <!-- <node name="jointStatePublisher" pkg="joint_state_publisher" type="joint_state_publisher" unless="$(arg gui)" /> -->
-    
+
     <!-- BB Calcola Le Trasformazioni TF Di Tutti I Link Usando I Dati Di Joint State -->
     <node name="robotStatePublisher" pkg="robot_state_publisher" type="robot_state_publisher" />
-    
+
     <!-- AA ========== Avvio RViz Con File Di Configurazione Salvato ========== -->
     <node name="rviz" pkg="rviz" type="rviz" args="-d $(find manipolatoreRRP)/rviz/manipolatoreRRP.rviz" required="true">
         <!-- BB Disabilita Pop-up Di Avviso EOL Di ROS 1 -->
@@ -35,6 +35,7 @@
 
     <!-- BB Script Per Il Movimento Del Manipolatore RRP Eseguito Solo Se La GUI È Disabilitata -->
     <!-- CC Required Serve Per Fare In Modo Che Se Termina Lo Script Termina Anche roslaunch -->
+    <!-- -->
     <node name="jointController" pkg="manipolatoreRRP" type="jointController.py" output="screen" unless="$(arg gui)" required="true"/>
 
     <!-- BB  Script Che Stampa Le Matrici Di Trasformazione Omogenea -->

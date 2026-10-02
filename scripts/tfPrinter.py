@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
 
+import os
+import sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
 import rospy
 import tf2_ros
 import numpy as np
@@ -29,11 +33,11 @@ while not rospy.is_shutdown():
       try:
             # BB Intercettazione Messaggio Di Trasformazione Tra Frame Source E Target
             # CC rospy.Time(0) Permette Di Ottenere L'Ultima Trasformazione Disponibile
-            dataTF = tf_buffer.lookup_transform(TARGET_FRAME, SOURCE_FRAME, rospy.Time(0))
+            dataTF = tf_buffer.lookup_transform(TARGET_FRAME, SOURCE_FRAME, rospy.Time(0), rospy.Duration(1.0))
 
             # BB Estrazione Della Traslazione E Della Rotazione Dal Messaggio Di Trasformazione
             translation = dataTF.transform.translation
-            rotation = dataTF.transform.rotation 
+            rotation = dataTF.transform.rotation
 
             # BB Stampa Dati Grezzi
             print("-----------------------------------------------------")

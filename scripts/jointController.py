@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 
 import os
+import sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import rospy
 import numpy as np
 from sensor_msgs.msg import JointState
@@ -20,28 +22,55 @@ rospy.init_node("jointController")
 publisher = rospy.Publisher("/joint_states", JointState, queue_size=10)
 
 # AA Definizione Delle Variabili Dei Giunti Iniziali
-q1 = 0.0
-q2 = 0.0
-q3 = 0.0
+# q1 = 0.0
+# q2 = 0.0
+# q3 = 0.0
 
 # AA Posizione EE Default
 # x = 2.55
 # y = 0.0
 # z = 0.36
 
+# AA Definizione Delle Variabili Iniziali Dei Giunti
+currentQ1 = 0.0
+currentQ2 = 0.0
+currentQ3 = 0.0
+
+# AA Definizione Delle Variabili Target Dei Giunti
+targetQ1 = 0.0
+targetQ2 = 0.0
+targetQ3 = 0.0
+
 # AA Pubblicazione Iniziale Per Configurare RViz Al Momento Dell Avvio
-# BB Pubblica Per Un Breve Periodo Per Allineare I Frame In RViz (Non Basta Un Solo Messaggio)
-for i in range(10):
-    msg = kinematicsUtils.createJointStateMsg(q1, q2, q3)
+# BB Pubblica A 20Hz Per Allineare I Frame In RViz (Non Basta Un Solo Messaggio)
+def publishJointStatesCallback(event):
+    global currentQ1, currentQ2, currentQ3
+
+    # CC Interpolazione Lineare Dei Giunti Per Evitare Salti Bruschi In RViz
+    alpha = 0.15
+    currentQ1 += alpha * (targetQ1 - currentQ1)
+    currentQ2 += alpha * (targetQ2 - currentQ2)
+    currentQ3 += alpha * (targetQ3 - currentQ3)
+
+    msg = kinematicsUtils.createJointStateMsg(currentQ1, currentQ2, currentQ3)
     publisher.publish(msg)
-    rospy.sleep(0.1)
+
+rospy.Timer(rospy.Duration(0.05), publishJointStatesCallback)
 
 # AA Ciclo Principale Di Input Utente Da Terminale
 while not rospy.is_shutdown():
-    kinematicType = input("Inserisci Il Tipo Di Cinematica (Diretta/Inversa/Esci): ").strip().lower()
-        
-    if kinematicType == "diretta":
-        print("\nCinematica Diretta")
+    try:
+        kinematicType = input("Inserisci Il Tipo Di Cinematica (Diretta/Inversa/Esci): ").strip().lower()
+    except (KeyboardInterrupt, EOFError):
+        print("\n[INFO] Interruzione Da Tastiera. Chiusura...")
+        rospy.signal_shutdown("Chiusura Da Terminale")
+        break
+
+    if not kinematicType:
+        print("[ATTENZIONE] Nessun Input Rilevato. Riprovare.")
+        continue
+    elif kinematicType == "diretta":
+        print("\n[MODALITA] Cinematica Diretta")
         try:
             # BB Acquisizione Dei Valori Inseriti Da Tastiera Per Ogni Giunto
             inputQ1 = float(input("Inserisci Il Valore Per Il Giunto 1 (q1 In Radianti): "))
@@ -50,32 +79,38 @@ while not rospy.is_shutdown():
         except ValueError:
             print("[ERRORE] Inserimento Non Valido. Digitare Esclusivamente Numeri.")
             continue
-            
+        except (KeyboardInterrupt, EOFError):
+            print("\n[INFO] Interruzione Da Tastiera. Chiusura...")
+            rospy.signal_shutdown("Chiusura Da Terminale")
+            break
+
         # BB Controllo Dei Limiti Fisici E Saturazione
         q1, q2, q3 = kinematicsUtils.checkJointLimits(inputQ1, inputQ2, inputQ3)
-        
+
         # BB Calcolo E Stampa Della Posa Dell End Effector Una Sola Volta
         tWorldEE, positionWorld = computeDirectKinematics(q1, q2, q3)
         print("\nMatrice Trasformazione Omogenea world - endEffector:")
         print(np.round(tWorldEE, 3))
         print(f"\nPosizione End Effector In World (X, Y, Z): {positionWorld}\n")
-        
+
         # BB Pubblicazione Del Nuovo Stato Per Aggiornare RViz
-        # CC (Si Potrebbe Pubblicare Più Volte Come Prima Per Sicurezza, Ma Anche Con Una Funziona)
-        msg = kinematicsUtils.createJointStateMsg(q1, q2, q3)
-        publisher.publish(msg)
-        rospy.sleep(0.02)
-        
+        # CC Aggiornamento Dello Stato Globale Tramite La Funzione Che Pubblica A 20Hz
+        targetQ1, targetQ2, targetQ3 = q1, q2, q3
+
     elif kinematicType == "inversa":
-        print("\nCinematica Inversa")
+        print("\n[MODALITA] Cinematica Inversa")
         try:
-            # BB Acquisizione Delle Coordinate Target Per L End Effector
+            # BB Acquisizione Delle Coordinate Target Per L'End Effector
             targetX = float(input("Inserisci La Coordinata Target X (In Metri): "))
             targetY = float(input("Inserisci La Coordinata Target Y (In Metri): "))
             targetZ = float(input("Inserisci La Coordinata Target Z (In Metri): "))
         except ValueError:
             print("[ERRORE] Inserimento Non Valido. Digitare Esclusivamente Numeri.")
             continue
+        except (KeyboardInterrupt, EOFError):
+            print("\n[INFO] Interruzione Da Tastiera. Chiusura...")
+            rospy.signal_shutdown("Chiusura Da Terminale")
+            break
 
         # BB Controllo Della Raggiungibilita Dello Spazio Di Lavoro Prima Di Calcolare I Giunti
         if not kinematicsUtils.checkWorkspace(targetX, targetY, targetZ):
@@ -97,17 +132,16 @@ while not rospy.is_shutdown():
             detJ, statusSing = kinematicsUtils.checkSingularity(q1, q2, q3)
             print(f"\t Determinante Jacobiano: {detJ:.6f} ({statusSing})")
 
-            # CC Pubblicazione Del Nuovo Stato Dei Giunti Su ROS Per Aggiornare RViz
-            msg = kinematicsUtils.createJointStateMsg(q1, q2, q3)
-            publisher.publish(msg)
-            rospy.sleep(0.02)
+            # BB Pubblicazione Del Nuovo Stato Per Aggiornare RViz
+            # CC Aggiornamento Dello Stato Globale Tramite La Funzione Che Pubblica A 20Hz
+            targetQ1, targetQ2, targetQ3 = q1, q2, q3
         else:
             print("[ERRORE] Impossibile Trovare Una Soluzione Valida Per I Giunti.")
-    
+
     elif kinematicType == "esci":
         # BB Spegnimento Del Nodo ROS E Chiusura Forzata Di Tutti I Thread
         rospy.signal_shutdown("Richiesta Chiusura Utente")
-        os._exit(0)
+        break
 
     else:
         # CC Messaggio Di Avviso Per Scelte Non Valide

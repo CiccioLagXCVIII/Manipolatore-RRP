@@ -1,7 +1,5 @@
 {
-  // AA =========================================================================
   // AA Configurazione Dei Terminali Automatici Al Lancio Del Workspace
-  // AA =========================================================================
   // BB Impostazioni Di Esecuzione E Chiusura Dei Terminali Integrati
   "autorun": true,
   "autokill": true,

@@ -5,7 +5,7 @@ import numpy as np
 import tf.transformations as tft
 from sensor_msgs.msg import JointState
 
-# AA Definizione Dei Parametri Fisici Del Robot Come Variabili Globali 
+# AA Definizione Dei Parametri Fisici Del Robot Come Variabili Globali
 # BB Siccome Poi Chiamo La Funzione loadRobotParameters() Per Caricare I Parametri Dal Server ROS
 # BB Verranno Sovrascritti, Ma Comunque È Necessario Dichiararli Come Variabili Globali Per Evitare Errori
 # CC Questi Valori Per I Parametri Fisici Del Robot (Che Poi Sono Quelli Veri) Sono Definiti Solo Per Sicurezza
@@ -13,7 +13,7 @@ from sensor_msgs.msg import JointState
 # BB Base
 baseWidth = 0.3             # Larghezza Base
 baseLength = 0.3            # Lunghezza Base
-baseHeight = 0.06           # Altezza Base
+baseHeight = 0.05           # Altezza Base
 worldBase = 2.0             # Distanza World Base
 
 # BB Link
@@ -35,18 +35,23 @@ eeFingerThickness = 0.01    # Spessore Singolo Dito Pinza 1cm
 
 
 # AA Funzione Che Carica I Parametri Fisici Del Robot Dal Server ROS E Li Rende Disponibili Come Variabili Globali
-def loadRobotParameters():
+paramsLoaded = False  # Variabile Di Controllo Per Evitare Di Caricare I Parametri Più Volte
+def loadRobotParameters(forceReload=False):
+    global paramsLoaded
     global baseWidth, baseLength, baseHeight, worldBase
     global l1, l2, l3, linkRadius
     global jointRadius, boxSize
     global eeBaseWidth, eeBaseLength, eeBaseHeight, eeFingerLength, eeFingerThickness
 
+    if paramsLoaded and not forceReload:
+        # I Parametri Sono Già Stati Caricati, Non È Necessario Ricaricarli
+        return
     # BB Importazione Dei Parametri Fisici Del Robot Dal Server ROS
     try:
         # CC Lettura Dal Server Con Valore Di Default Di Sicurezza Se La Chiave Non Esiste
         baseWidth = rospy.get_param("/baseWidth", 0.3)      # Larghezza Base
         baseLength = rospy.get_param("/baseLength", 0.3)    # Lunghezza Base
-        baseHeight = rospy.get_param("/baseHeight", 0.06)   # Altezza Base
+        baseHeight = rospy.get_param("/baseHeight", 0.05)   # Altezza Base
         worldBase = rospy.get_param("/worldBase", 2.0)      # Distanza World Base
 
         l1 = rospy.get_param("/l1", 0.55)
@@ -63,6 +68,7 @@ def loadRobotParameters():
         eeFingerLength = rospy.get_param("/eeFingerLength", 0.05)
         eeFingerThickness = rospy.get_param("/eeFingerThickness", 0.01)
 
+        paramsLoaded = True
     except Exception as e:
         rospy.logerr(f"Errore Durante Il Caricamento Dei Parametri Del Robot: {e}")
         rospy.logwarn("Impostati I Valori Di Default Per I Parametri Del Robot")
@@ -96,11 +102,11 @@ def checkJointLimits(q1, q2, q3):
         q2 = (np.pi/4)
 
     # BB Controllo Del Giunto Tre
-    # CC Verifica E Limita Il Giunto Prismatico Tra La Metà Della Dimensione Del Box E La Lunghezza Libera Dell'Asta
-    if q3 < 0:
-        rospy.logwarn(f"Valore Giunto 3 Inferiore Al Limite Minimo [ {boxSize/2} ]")
-        q3 = boxSize/2
-    elif q3 > (l3):
+    # CC Verifica E Limita Il Giunto Prismatico Tra 0.0 E La Lunghezza Del Braccio (l3)
+    if q3 < 0.0:
+        rospy.logwarn("Valore Giunto 3 Inferiore Al Limite Minimo [ 0.0 ]")
+        q3 = 0.0
+    elif q3 > l3:
         rospy.logwarn(f"Valore Giunto 3 Superiore Al Limite Massimo [ {l3} ]")
         q3 = l3
 
@@ -124,7 +130,7 @@ def createJointStateMsg(q1, q2, q3):
     # BB Definizione Timestamp Header Del Messaggio
     # CC seq E frame_id Non Sono Necessari In Questo Caso Perchè
     msg.header.stamp = rospy.Time.now()
-    
+
     # BB Definizione Nomi Dei Giunti Coerenti Con Il File URDF
     # CC giuntoWorld e giuntoEE Sono Fissi E Non Ricevono Valori Quindi Non È Necessario Includerli
     msg.name = ["giunto1", "giunto2", "giunto3"]
@@ -145,7 +151,7 @@ def createJointStateMsg(q1, q2, q3):
 
 # AA Funzione Che Calcola La Matrice Di Trasformazione Omogenea 4x4 A Partire Dal Vettore Di Traslazione E Dal Quaternione Di Rotazione
 def getTransformationMatrix(translation, rotation):
-    
+
     # BB Conversione Vettore Di Traslazione E Quaternione In Array NumPy
     translationVector = np.array([translation.x, translation.y, translation.z])
     quaternionVector = np.array([rotation.x, rotation.y, rotation.z, rotation.w])
@@ -155,7 +161,7 @@ def getTransformationMatrix(translation, rotation):
     rotationMatrix   = quaternionMatrix[:3, :3]
 
     # print("\nMatrice Di Rotazione 3x3:\n")
-    # print(np.round(rotationMatrix, 4)) 
+    # print(np.round(rotationMatrix, 4))
 
     # print("\nVettore Di Traslazione:\n")
     # print(np.round(translationVector, 4))
@@ -171,7 +177,6 @@ def getTransformationMatrix(translation, rotation):
     return transformationMatrix
 
 # AA Funzione Che Controlla Se Il Target È Raggiungibile All'Interno Del Workspace Del Robot
-# AA Funzione Che Controlla Se Il Target È Raggiungibile All'Interno Del Workspace Del Robot
 def checkWorkspace(xTarget, yTarget, zTarget):
     # BB Caricamento Dei Parametri Geometrici Del Robot Dal Parameter Server
     loadRobotParameters()
@@ -180,29 +185,45 @@ def checkWorkspace(xTarget, yTarget, zTarget):
     d1 = 3 * jointRadius + l1
     a2 = jointRadius + l2 + (boxSize / 2.0)
 
-    # BB Calcolo Dei Raggi Della Circonferenza
+    # BB Calcolo Dei Raggi Minimo E Massimo Del Workspace Del Robot
     rDMax = np.sqrt(a2**2 + (l3 + (boxSize / 2.0))**2)
     rDMin = np.sqrt(a2**2 + (boxSize / 2.0)**2)
 
-    # BB Calcolo Coordinate Del Centro Del Secondo Giunto Nel Frame Globale World
-    xShoulder = worldBase
-    yShoulder = 0.0
-    zShoulder = baseHeight + d1
+    # BB Traslazione Del Target Nel Frame Del Giunto 2
+    xRel = xTarget - worldBase
+    yRel = yTarget
+    zRel = zTarget - baseHeight - d1
 
-    # CC Calcolo Distanza Euclidea Tra Il Giunto 2 E End Effector
-    rD = np.sqrt((xTarget - xShoulder)**2 + (yTarget - yShoulder)**2 + (zTarget - zShoulder)**2)
+    # CC Distanza Radiale Dal Centro Del Giunto 2 Al Target
+    rD = np.sqrt(xRel**2 + yRel**2 + zRel**2)
 
-    # BB Verifica Se La Distanza Calcolata Rientra Nei Limiti Del Workspace Del Robot
-    # CC Il Valore Di Ritorno Sara True Se Il Target E Raggiungibile Altrimenti False
     if rD < rDMin:
-        rospy.logwarn(f"Target Troppo Vicino Al Giunto 2 Del Robot: Distanza Calcolata {rD:.4f} Inferiore A {rDMin:.4f}")
+        rospy.logwarn(f"Target Troppo Vicino Al Giunto 2 Del Robot: Distanza {rD:.4f} < {rDMin:.4f}")
         return False
     elif rD > rDMax:
-        rospy.logwarn(f"Target Fuori Dal Raggio Di Estensione Massimo: Distanza Calcolata {rD:.4f} Superiore A {rDMax:.4f}")
+        rospy.logwarn(f"Target Fuori Dal Raggio Massimo: Distanza {rD:.4f} > {rDMax:.4f}")
         return False
 
-    # CC Rimossa La Verifica Sulla Distanza Orizzontale Minore Di a2 Perche Il Giunto Di Spalla
-    # DD Permette Di Ruotare Di Beccheggio Riducendo La Proiezione Orizzontale Fino A Valori Molto Piccoli
+    # DD Verifica Dei Limiti Angolari Di q2
+    squareRootArg = rD**2 - a2**2
+    if squareRootArg < 0.0:
+        return False
+
+    # DD Il Valore d3 È Negativo Perché Il Giunto Prismatico Si Estende Lontano Dal Giunto 2, Quindi La Direzione Del Vettore Dal Giunto 2 Al Target Ha Componente Negativa Lungo l'Asse Z
+    d3 = -np.sqrt(squareRootArg)
+    rXY = np.sqrt(xRel**2 + yRel**2)
+
+    # CC Calcolo Valori Gomito Alto E Gomito Basso Per Giunto 2 (q2)
+    q2Up = np.arctan2(d3 * rXY - a2 * zRel, a2 * rXY + d3 * zRel)
+    q2Down = np.arctan2(d3 * (-rXY) - a2 * zRel, a2 * (-rXY) + d3 * zRel)
+
+    limitMinQ2 = -np.pi / 2.0
+    limitMaxQ2 = np.pi / 4.0
+
+    # DD Verifico Se Almeno Una Delle Due Soluzioni Per q2 È All'Interno Dei Limiti Del Giunto
+    if not (limitMinQ2 <= q2Up <= limitMaxQ2 or limitMinQ2 <= q2Down <= limitMaxQ2):
+        rospy.logwarn("Target Non Raggiungibile: Supera I Limiti Angolari Del Giunto 2")
+        return False
 
     return True
 
@@ -230,6 +251,7 @@ def checkSingularity(q1, q2, q3):
     tolerance = 1e-3
     singularityStatus = "Sicuro"
 
+    # DD d3 = 0 È Fisicamente Irraggiungibile Per Il Finecorsa (d3 <= -boxSize/2 = -0.05)
     if firstCond < tolerance:
         singularityStatus = "Singolarita Giunto Prismatico d3 Vicino A Zero"
         rospy.logwarn(f"Attenzione: Robot Vicino A Singolarita Prismatico Con d3 = {d3:.4f}")
