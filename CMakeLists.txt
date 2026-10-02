@@ -10,6 +10,7 @@ project(manipolatoreRRP)
 find_package(catkin REQUIRED COMPONENTS
   rospy
   sensor_msgs
+  tf
   tf2_ros
 )
 
@@ -103,7 +104,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-  CATKIN_DEPENDS rospy sensor_msgs tf2_ros
+  CATKIN_DEPENDS rospy sensor_msgs tf tf2_ros
 )
 
 ###########
@@ -187,7 +188,7 @@ catkin_install_python(PROGRAMS
 # )
 
 ## Mark other files for installation (e.g. launch and bag files, etc.)
-install(DIRECTORY config launch rviz urdf
+install(DIRECTORY config launch rviz urdf scriptAusiliari
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
 

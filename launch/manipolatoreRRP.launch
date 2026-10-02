@@ -19,9 +19,6 @@
     <!-- BB Avvio Publisher Con Interfaccia Grafica Solo Se L'Argomento È Vero -->
     <node name="jointStatePublisherGui" pkg="joint_state_publisher_gui" type="joint_state_publisher_gui" if="$(arg gui)"/>
 
-    <!-- BB Avvio Publisher Standard Se L'Argomento GUI E Falso -->
-    <!-- <node name="jointStatePublisher" pkg="joint_state_publisher" type="joint_state_publisher" unless="$(arg gui)" /> -->
-
     <!-- BB Calcola Le Trasformazioni TF Di Tutti I Link Usando I Dati Di Joint State -->
     <node name="robotStatePublisher" pkg="robot_state_publisher" type="robot_state_publisher" />
 
@@ -33,12 +30,10 @@
 
     <!-- AA ========== Gestione Script ========== -->
 
-    <!-- BB Script Per Il Movimento Del Manipolatore RRP Eseguito Solo Se La GUI È Disabilitata -->
-    <!-- CC Required Serve Per Fare In Modo Che Se Termina Lo Script Termina Anche roslaunch -->
-    <!-- -->
+    <!-- BB Script Per Il Movimento Del Manipolatore Eseguito Direttamente A Schermo Se GUI È Falsa -->
     <node name="jointController" pkg="manipolatoreRRP" type="jointController.py" output="screen" unless="$(arg gui)" required="true"/>
 
-    <!-- BB  Script Che Stampa Le Matrici Di Trasformazione Omogenea -->
+    <!-- BB Script Che Stampa Le Matrici Di Trasformazione Solo Se La GUI È Abilitata -->
     <node name="tfPrinter" pkg="manipolatoreRRP" type="tfPrinter.py" output="screen" if="$(arg gui)"/>
 
 </launch>

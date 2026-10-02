@@ -1,6 +1,10 @@
-# AA ========================================== Funzioni Di Utilita Per I Giunti E I Messaggi ==========================================
+#!/usr/bin/env python3
 
+# AA ========================================== Funzioni Di Utilita Per I Giunti E I Messaggi ==========================================
+import os
 import rospy
+import yaml
+import rospkg
 import numpy as np
 import tf.transformations as tft
 from sensor_msgs.msg import JointState
@@ -47,31 +51,66 @@ def loadRobotParameters(forceReload=False):
         # I Parametri Sono Già Stati Caricati, Non È Necessario Ricaricarli
         return
     # BB Importazione Dei Parametri Fisici Del Robot Dal Server ROS
-    try:
-        # CC Lettura Dal Server Con Valore Di Default Di Sicurezza Se La Chiave Non Esiste
-        baseWidth = rospy.get_param("/baseWidth", 0.3)      # Larghezza Base
-        baseLength = rospy.get_param("/baseLength", 0.3)    # Lunghezza Base
-        baseHeight = rospy.get_param("/baseHeight", 0.05)   # Altezza Base
-        worldBase = rospy.get_param("/worldBase", 2.0)      # Distanza World Base
+    loadedFromROS = False
+    if rospy.core.is_initialized():
+        try:
+            # CC Lettura Dal Server Con Valore Di Default Di Sicurezza Se La Chiave Non Esiste
+            baseWidth = rospy.get_param("/baseWidth", 0.3)      # Larghezza Base
+            baseLength = rospy.get_param("/baseLength", 0.3)    # Lunghezza Base
+            baseHeight = rospy.get_param("/baseHeight", 0.05)   # Altezza Base
+            worldBase = rospy.get_param("/worldBase", 2.0)      # Distanza World Base
 
-        l1 = rospy.get_param("/l1", 0.55)
-        l2 = rospy.get_param("/l2", 0.45)
-        l3 = rospy.get_param("/l3", 0.35)
-        linkRadius = rospy.get_param("/linkRadius", 0.035)
+            l1 = rospy.get_param("/l1", 0.55)
+            l2 = rospy.get_param("/l2", 0.45)
+            l3 = rospy.get_param("/l3", 0.35)
+            linkRadius = rospy.get_param("/linkRadius", 0.035)
 
-        jointRadius = rospy.get_param("/jointRadius", 0.05)
-        boxSize = rospy.get_param("/boxSize", 0.10)
+            jointRadius = rospy.get_param("/jointRadius", 0.05)
+            boxSize = rospy.get_param("/boxSize", 0.10)
 
-        eeBaseWidth = rospy.get_param("/eeBaseWidth", 0.05)
-        eeBaseLength = rospy.get_param("/eeBaseLength", 0.10)
-        eeBaseHeight = rospy.get_param("/eeBaseHeight", 0.015)
-        eeFingerLength = rospy.get_param("/eeFingerLength", 0.05)
-        eeFingerThickness = rospy.get_param("/eeFingerThickness", 0.01)
+            eeBaseWidth = rospy.get_param("/eeBaseWidth", 0.05)
+            eeBaseLength = rospy.get_param("/eeBaseLength", 0.10)
+            eeBaseHeight = rospy.get_param("/eeBaseHeight", 0.015)
+            eeFingerLength = rospy.get_param("/eeFingerLength", 0.05)
+            eeFingerThickness = rospy.get_param("/eeFingerThickness", 0.01)
 
-        paramsLoaded = True
-    except Exception as e:
-        rospy.logerr(f"Errore Durante Il Caricamento Dei Parametri Del Robot: {e}")
-        rospy.logwarn("Impostati I Valori Di Default Per I Parametri Del Robot")
+            loadedFromROS = True
+        except (KeyError, rospy.ROSException):
+            loadedFromROS = False
+            rospy.logerr(f"Errore Durante Il Caricamento Dei Parametri Del Robot")
+            rospy.logwarn("Impostati I Valori Di Default Per I Parametri Del Robot")
+
+    # CC Se ROS Non Riesce A Raggiungere ROS O A Caricare I Parametri, Legge I Parametri Dal File YAML
+    if not loadedFromROS:
+        try:
+            # DD Prova A Trovare Il Percorso Del Pacchetto ROS E Caricare Il File YAML Dei Parametri
+            rospack = rospkg.RosPack()
+            pkgPath = rospack.get_path('manipolatoreRRP')
+            yamlPath = os.path.join(pkgPath, 'config', 'robotParameters.yaml')
+        except Exception:
+            # DD Se Non È Possibile Trovare Il Pacchetto ROS, Usa Il Percorso Al File YAML
+            yamlPath = os.path.join(os.path.dirname(__file__), '..', 'config', 'robotParameters.yaml')
+
+        with open(yamlPath, 'r') as f:
+            params = yaml.safe_load(f)
+
+        baseWidth = params['baseWidth']
+        baseLength = params['baseLength']
+        baseHeight = params['baseHeight']
+        worldBase = params['worldBase']
+        l1 = params['l1']
+        l2 = params['l2']
+        l3 = params['l3']
+        linkRadius = params['linkRadius']
+        jointRadius = params['jointRadius']
+        boxSize = params['boxSize']
+        eeBaseWidth = params['eeBaseWidth']
+        eeBaseLength = params['eeBaseLength']
+        eeBaseHeight = params['eeBaseHeight']
+        eeFingerLength = params['eeFingerLength']
+        eeFingerThickness = params['eeFingerThickness']
+
+    paramsLoaded = True
 
 # BB Limiti
 # Giunto 1: Da -3.142 a 3.142 (360 gradi)
@@ -102,7 +141,7 @@ def checkJointLimits(q1, q2, q3):
         q2 = (np.pi/4)
 
     # BB Controllo Del Giunto Tre
-    # CC Verifica E Limita Il Giunto Prismatico Tra 0.0 E La Lunghezza Del Braccio (l3)
+    # CC Verifica E Limita Il Giunto Prismatico Tra 0.0 (Massima Estensione) E La Lunghezza Del Braccio l3 (Massima Retrazione)
     if q3 < 0.0:
         rospy.logwarn("Valore Giunto 3 Inferiore Al Limite Minimo [ 0.0 ]")
         q3 = 0.0

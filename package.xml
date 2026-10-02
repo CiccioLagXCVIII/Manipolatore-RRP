@@ -58,6 +58,7 @@
 
   <!-- BB Dipendenze Condivise Sia In Fase Di Compilazione Che Di Esecuzione -->
   <depend>sensor_msgs</depend>
+  <depend>tf</depend>
   <depend>tf2_ros</depend>
 
   <!-- BB Dipendenze Richieste Esclusivamente Durante Il Tempo Di Esecuzione -->
